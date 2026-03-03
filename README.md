@@ -1,5 +1,10 @@
 # UIDAI Data Hackathon 2026 – Aadhaar Analytics & Insights
 
+ **Live Dashboard:**  https://uidai-data-hackathon-2026-5ziiz8dmvfzncfxua43xts.streamlit.app
+ ## Demo
+
+![Dashboard Demo](assets/Demo.gif)
+
 ## Overview
 This repository contains the analytical work developed for the **UIDAI Data Hackathon 2026**.  
 The project focuses on analyzing large-scale, anonymized Aadhaar datasets to identify **patterns, trends, anomalies, and operational insights** related to enrollment, biometric updates, and demographic activity across India.

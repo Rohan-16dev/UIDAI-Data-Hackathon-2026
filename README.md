@@ -2,8 +2,7 @@
 
  **Live Dashboard:**  https://uidai-data-hackathon-2026-5ziiz8dmvfzncfxua43xts.streamlit.app
  ## Demo
-
-![Dashboard Demo](assets/Demo.gif)
+![Dashboard Demo](anomaly_prediction_model/assets/Demo.gif)
 
 ## Overview
 This repository contains the analytical work developed for the **UIDAI Data Hackathon 2026**.  

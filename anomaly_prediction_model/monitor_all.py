@@ -78,12 +78,15 @@ def process(file, dataset):
     anomaly = iso.predict(X)
 
     out = pd.DataFrame({
-        "dataset": dataset,
-        "predicted": pred,
-        "anomaly": anomaly,
-        "actual": y,
-        "difference": (y - pred).abs(),
-    })
+    "dataset": dataset,
+    "state": clean["state"],
+    "district": clean["district"],
+    "pincode": clean["pincode"],
+    "predicted": pred,
+    "anomaly": anomaly,
+    "actual": y,
+    "difference": (y - pred).abs(),
+})
 
     file = CONFIG[dataset]["result"]
 

@@ -83,12 +83,127 @@ if data is not None:
             st.subheader("System Risk Score")
 
             if risk_score > THRESHOLD:
-                st.error(f"⚠ HIGH RISK ALERT — Score: {risk_score:.2f}")
-            elif risk_score > THRESHOLD*0.6:
-                st.warning(f"Moderate Risk — Score: {risk_score:.2f}")
-            else:
-                st.success(f"System Normal — Score: {risk_score:.2f}")
+                 st.error(f"🔴 CRITICAL ALERT — Score: {risk_score:.2f}")
 
+            elif risk_score > THRESHOLD * 0.8:
+                 st.warning(f"🟠 HIGH RISK — Score: {risk_score:.2f}")
+
+            elif risk_score > THRESHOLD * 0.5:
+                 st.info(f"🟡 EARLY WARNING — Score: {risk_score:.2f}")
+
+            else:
+                 st.success(f"🟢 SYSTEM NORMAL — Score: {risk_score:.2f}")
+            
+            dataset_risk = data.groupby("dataset")["score"].mean().sort_values(ascending=False)
+            top_dataset = dataset_risk.index[0]
+            top_score = dataset_risk.iloc[0]
+
+            st.subheader("Dataset Risk Contribution")
+
+            st.warning(
+            f"⚠️ Highest risk coming from **{top_dataset.upper()} dataset** — Score: {top_score:.2f}"
+            )
+            
+            for dataset, score in dataset_risk.items():
+
+               if score > THRESHOLD:
+                     st.error(f"🔴 Critical anomaly in {dataset} dataset — Score {score:.2f}")
+
+               elif score > THRESHOLD * 0.6:
+                   st.warning(f"🟠 Elevated anomaly in {dataset} dataset — Score {score:.2f}")
+
+            st.subheader("🚨 Dataset & Location Alerts")
+
+            state_map = {
+             1: "Bihar",
+             2: "Maharashtra",
+             3: "West Bengal",
+             4: "UP",
+             5: "Karnataka",
+             6: "Tamil Nadu",
+             7: "Delhi",
+             8: "Gujarat",
+             9: "Rajasthan"
+             }
+
+            district_map = {
+             1: "Patna",
+             2: "Mumbai",
+             3: "Kolkata",
+             4: "Lucknow",
+             5: "Bangalore",
+             6: "Chennai",
+             7: "Delhi",
+             8: "Ahmedabad",
+             9: "Jaipur"
+             }
+
+            pincode_map = {
+             1: "800001",
+             2: "400001",
+             3: "700001",
+             4: "226001",
+             5: "560001",
+             6: "600001",
+             7: "110001",
+             8: "380001",
+             9: "302001"
+             }       
+
+            data["state_name"] = data["state"].map(state_map)
+            data["district_name"] = data["district"].map(district_map)
+            data["pincode_name"] = data["pincode"].map(pincode_map) 
+
+            data["deviation_percent"] = (
+             (data["actual"] - data["predicted"]) / (data["predicted"] + 1)
+             ) * 100
+ 
+            def explain_anomaly(row):
+
+                 dataset = row["dataset"]
+                 state = row["state_name"]
+                 district = row["district_name"]
+                 deviation = row["deviation_percent"]
+
+                 if deviation > 0:
+                     return f"⚠️ Abnormal {dataset} spike detected in {district}, {state}. Activity is {abs(deviation):.1f}% higher than expected."
+
+                 else:
+                     return f"⚠️ Unexpected drop in {dataset} activity detected in {district}, {state}. Activity is {abs(deviation):.1f}% lower than expected."
+                 
+            alerts = data[data["anomaly"] == 1]
+
+            if alerts.empty:
+                 st.success("No anomalies detected across datasets.")
+            else:
+                 for _, row in alerts.tail(5).iterrows():
+
+                     st.error(
+                       f"""
+                      🔴 **Anomaly Detected**
+
+                       Dataset: **{row['dataset']}**
+
+                       Location: **{row['district']}, {row['state']}**
+
+                       Pincode: **{row['pincode']}**
+
+                       Actual: **{row['actual']:.2f}**
+
+                       Expected: **{row['predicted']:.2f}**
+
+                       Deviation: **{row['difference']:.2f}**
+                       """
+                      )
+             
+            st.subheader("🚨 Intelligent Alerts")
+
+            for _, row in alerts.tail(5).iterrows():
+
+                 message = explain_anomaly(row)
+
+                 st.error(message)        
+            
 
             # =====================================================
             # TREND GRAPH 

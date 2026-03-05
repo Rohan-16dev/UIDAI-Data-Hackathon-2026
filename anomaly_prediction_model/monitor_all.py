@@ -9,22 +9,22 @@ from preprocess import preprocess_clean
 
 CONFIG = {
     "enrollment": {
-        "folder": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\enrollment",
-        "rf": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\models\e_rf_model.pkl",
-        "iso": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\models\e_iso_model.pkl",
-        "result": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\results\enrollment.csv"
+        "folder": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\enrollment",
+        "rf": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\models\e_rf_model.pkl",
+        "iso": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\models\e_iso_model.pkl",
+        "result": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\results\enrollment.csv"
     },
     "biometric": {
-        "folder": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\biometric",
-        "rf": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\models\b_rf_model.pkl",
-        "iso": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\models\b_iso_model.pkl",
-        "result": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\results\biometric.csv"
+        "folder": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\biometric",
+        "rf": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\models\b_rf_model.pkl",
+        "iso": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\models\b_iso_model.pkl",
+        "result": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\results\biometric.csv"
     },
     "demographic": {
-        "folder": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\demographic",
-        "rf": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\models\d_rf_model.pkl",
-        "iso": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\models\d_iso_model.pkl",
-        "result": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\results\demographic.csv"
+        "folder": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\demographic",
+        "rf": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\models\d_rf_model.pkl",
+        "iso": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\models\d_iso_model.pkl",
+        "result": r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\results\demographic.csv"
     }
 }
 
@@ -52,6 +52,7 @@ def process(file, dataset):
         print(f"Skipping {file}: {e}")
         return
 
+    raw_df = df.copy()
     # same preprocessing as training
     clean = preprocess_clean(df)
 
@@ -79,9 +80,9 @@ def process(file, dataset):
 
     out = pd.DataFrame({
     "dataset": dataset,
-    "state": clean["state"],
-    "district": clean["district"],
-    "pincode": clean["pincode"],
+    "state": raw_df["state"],
+    "district": raw_df["district"],
+    "pincode": raw_df["pincode"],
     "predicted": pred,
     "anomaly": anomaly,
     "actual": y,

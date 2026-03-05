@@ -5,14 +5,15 @@ import os
 import time
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pydeck as pdk
 
 st.set_page_config(layout="wide")
 st.title("Predictive Early Warning System")
 
 FILES = {
-    "Enrollment":r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\results\enrollment.csv",
-    "Biometric":r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\results\biometric.csv",
-    "Demographic":r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\results\demographic.csv"
+    "Enrollment":r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\results\enrollment.csv",
+    "Biometric":r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\results\biometric.csv",
+    "Demographic":r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\results\demographic.csv"
 }
 
 THRESHOLD = 0.50   # deviation threshold (50%)
@@ -51,6 +52,50 @@ def load_all():
 data = load_all()
 
 if data is not None:
+        state_map = {
+             1: "Bihar",
+             2: "Maharashtra",
+             3: "West Bengal",
+             4: "UP",
+             5: "Karnataka",
+             6: "Tamil Nadu",
+             7: "Delhi",
+             8: "Gujarat",
+             9: "Rajasthan"
+             }
+
+        district_map = {
+             1: "Patna",
+             2: "Mumbai",
+             3: "Kolkata",
+             4: "Lucknow",
+             5: "Bangalore",
+             6: "Chennai",
+             7: "Delhi",
+             8: "Ahmedabad",
+             9: "Jaipur"
+             }
+
+        pincode_map = {
+             1: "800001",
+             2: "400001",
+             3: "700001",
+             4: "226001",
+             5: "560001",
+             6: "600001",
+             7: "110001",
+             8: "380001",
+             9: "302001"
+             }       
+
+        data["state_name"] = data["state"].round().clip(1,10).astype(int).map(state_map)
+        data["district_name"] = data["district"].round().clip(1,10).astype(int).map(district_map)
+        data["pincode_name"] = data["pincode"].round().clip(1,10).astype(int).map(pincode_map) 
+
+        data["deviation_percent"] = (
+        (data["actual"] - data["predicted"]) / (data["predicted"] + 1)
+        ) * 100
+        
         st.write("Columns detected:", list(data.columns))
         with placeholder.container():
 
@@ -72,12 +117,47 @@ if data is not None:
 
             col3.metric("Avg Deviation", avg_dev)
 
+            def generate_insight(data):
+
+                total_anomalies = data["anomaly"].sum()
+
+                if total_anomalies == 0:
+                     return "System operating normally. No anomalies detected across monitored datasets."
+
+                # dataset causing most anomalies
+                dataset_risk = data[data["anomaly"] == 1]["dataset"].value_counts()
+
+                if len(dataset_risk) > 0:
+                     top_dataset = dataset_risk.index[0]
+                else :
+                     top_dataset = "Unknown"
+                
+                # most affected state
+                state_risk = data[data["anomaly"] == 1]["state_name"].value_counts()
+
+                if len(state_risk) > 0:
+                     top_state = state_risk.index[0]
+                else :
+                     top_state = "Unknown"
+
+                return (
+                  f"Elevated anomaly activity detected. "
+                  f"Most anomalies are originating from the **{top_dataset} dataset**. "
+                  f"The region most affected is **{top_state}**. "
+                  f"Monitoring recommended for unusual activity spikes."
+                 )
+ 
+            st.subheader("📊 System Insight Summary")
+
+            insight = generate_insight(data)
+
+            st.info(insight)
 
             # =====================================================
             # ANOMALY SCORE
             # =====================================================
 
-            data["score"] = data["difference"] / (data["actual"]+1)
+            data["score"] = data["difference"] / (abs(data["actual"])+1)
             risk_score = data["score"].mean()
 
             st.subheader("System Risk Score")
@@ -114,50 +194,6 @@ if data is not None:
 
             st.subheader("🚨 Dataset & Location Alerts")
 
-            state_map = {
-             1: "Bihar",
-             2: "Maharashtra",
-             3: "West Bengal",
-             4: "UP",
-             5: "Karnataka",
-             6: "Tamil Nadu",
-             7: "Delhi",
-             8: "Gujarat",
-             9: "Rajasthan"
-             }
-
-            district_map = {
-             1: "Patna",
-             2: "Mumbai",
-             3: "Kolkata",
-             4: "Lucknow",
-             5: "Bangalore",
-             6: "Chennai",
-             7: "Delhi",
-             8: "Ahmedabad",
-             9: "Jaipur"
-             }
-
-            pincode_map = {
-             1: "800001",
-             2: "400001",
-             3: "700001",
-             4: "226001",
-             5: "560001",
-             6: "600001",
-             7: "110001",
-             8: "380001",
-             9: "302001"
-             }       
-
-            data["state_name"] = data["state"].map(state_map)
-            data["district_name"] = data["district"].map(district_map)
-            data["pincode_name"] = data["pincode"].map(pincode_map) 
-
-            data["deviation_percent"] = (
-             (data["actual"] - data["predicted"]) / (data["predicted"] + 1)
-             ) * 100
- 
             def explain_anomaly(row):
 
                  dataset = row["dataset"]
@@ -184,9 +220,9 @@ if data is not None:
 
                        Dataset: **{row['dataset']}**
 
-                       Location: **{row['district']}, {row['state']}**
+                       Location: **{row['district_name']}, {row['state_name']}**
 
-                       Pincode: **{row['pincode']}**
+                       Pincode: **{row['pincode_name']}**
 
                        Actual: **{row['actual']:.2f}**
 
@@ -202,9 +238,72 @@ if data is not None:
 
                  message = explain_anomaly(row)
 
-                 st.error(message)        
-            
+                 st.error(message)   
 
+            # =========================================
+            # CRITICAL ALERT LOG
+            # =========================================
+
+            st.subheader("🚨 Recent Critical Alerts")
+
+            # Define critical threshold
+            CRITICAL_THRESHOLD = THRESHOLD
+
+            critical_alerts = data[data["score"] > CRITICAL_THRESHOLD]
+
+            if critical_alerts.empty:
+                st.success("No critical alerts recorded.")
+            else:
+
+                alert_table = critical_alerts[
+                [
+                 "dataset",
+                 "state_name",
+                 "district_name",
+                 "pincode_name",
+                 "actual",
+                 "predicted",
+                 "difference",
+                 "score"
+                ]
+                ].sort_values("score", ascending=False).head(10)
+
+                alert_table.columns = [
+                 "Dataset",
+                 "State",
+                 "District",
+                 "Pincode",
+                 "Actual",
+                 "Expected",
+                 "Deviation",
+                 "Risk Score"
+                ]
+
+                st.dataframe(alert_table, use_container_width=True)  
+
+            
+            # =====================================
+            # TOP RISK LOCATIONS
+            # =====================================
+
+            st.subheader("! Top Risk Locations")
+
+            anomaly_data = data[data["anomaly"] == 1]
+
+            if anomaly_data.empty:
+                st.success("No risky regions detected.")
+            else:
+     
+                top_locations = (
+                anomaly_data.groupby(["state_name","district_name"])
+                .size()
+                .sort_values(ascending=False)
+                .head(5)
+                )
+
+                for i, ((state, district), count) in enumerate(top_locations.items(), start=1):
+                     st.write(f"{i} **{district}, {state}** — {count} anomalies")
+        
             # =====================================================
             # TREND GRAPH 
             # =====================================================
@@ -262,6 +361,57 @@ if data is not None:
             st.subheader("Deviation Trend (Live)")
 
             st.line_chart(data["difference"])
+
+            state_coords = {
+                "Bihar": [25.5941, 85.1376],
+                "Maharashtra": [19.7515, 75.7139],
+                "West Bengal": [22.9868, 87.8550],
+                "UP": [26.8467, 80.9462],
+                "Karnataka": [15.3173, 75.7139],
+                "Tamil Nadu": [11.1271, 78.6569],
+                "Delhi": [28.7041, 77.1025],
+                "Gujarat": [22.2587, 71.1924],
+                "Rajasthan": [27.0238, 74.2179]
+                }
+
+
+
+            map_data = data[data["anomaly"] == 1].copy()
+
+            map_data["lat"] = map_data["state_name"].map(lambda x: state_coords.get(x, [None, None])[0])
+            map_data["lon"] = map_data["state_name"].map(lambda x: state_coords.get(x, [None, None])[1])
+
+            map_data = map_data.dropna(subset=["lat", "lon"])
+
+            # =========================================
+            # ANOMALY HOTSPOT MAP
+            # =========================================
+
+            st.subheader("🗺️ India Anomaly Hotspots")
+
+            layer = pdk.Layer(
+                "ScatterplotLayer",
+                 data=map_data,
+                 get_position="[lon, lat]",
+                 get_radius="difference * 40000",
+                 get_fill_color="[255, 0, 0, 160]",
+                 pickable=True,
+                )
+
+            view_state = pdk.ViewState(
+                latitude=22.9734,
+                longitude=78.6569,
+                zoom=4,
+                pitch=0,
+                )
+
+            deck = pdk.Deck(
+                layers=[layer],
+                initial_view_state=view_state,
+                tooltip={"text": "{dataset} anomaly in {state_name}"}
+               )
+
+            st.pydeck_chart(deck)   
 
 
             # =====================================================

@@ -5,9 +5,9 @@ import os
 import random
 
 folders = [
-    r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\enrollment",
-    r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\biometric",
-    r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\demographic"
+    r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\enrollment",
+    r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\biometric",
+    r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\demographic"
 ]
 
 
@@ -22,7 +22,7 @@ while True:
     folder = random.choice(folders).strip()
 
     rows = np.random.randint(5,15)
-    if folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\enrollment":
+    if folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\enrollment":
       df = pd.DataFrame({
           "year": np.random.randint(2024,2027,rows),
           "month": np.random.randint(1,12,rows),
@@ -34,7 +34,7 @@ while True:
           "age_18_greater": np.random.randint(0,100,rows),
           "district": np.random.randint(1,10,rows)
     })
-    elif folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\biometric":
+    elif folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\biometric":
       df = pd.DataFrame({
           "year": np.random.randint(2024,2027,rows),
           "month": np.random.randint(1,12,rows),
@@ -45,7 +45,7 @@ while True:
           "bio_age_17_": np.random.randint(0,100,rows),
           "district": np.random.randint(1,10,rows)
     })
-    elif folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\Anomaly Prediction Model\incoming\demographic":
+    elif folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\demographic":
       df = pd.DataFrame({
           "year": np.random.randint(2024,2027,rows),
           "month": np.random.randint(1,12,rows),

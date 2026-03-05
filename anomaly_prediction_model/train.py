@@ -19,9 +19,9 @@ files = glob.glob(r"C:\Demographic-data\api_data_aadhar_demographic\**\*.csv", r
 demographic_df =  pd.concat((pd.read_csv(f) for f in files), ignore_index=True)
 ddf = preprocess_clean(demographic_df)
 
-edf = edf.sample(50000, random_state=42)
-bdf = bdf.sample(50000, random_state=42)
-ddf = ddf.sample(50000, random_state=42)
+edf = edf.sample(min(len(edf),50000), random_state=42)
+bdf = bdf.sample(min(len(bdf),50000), random_state=42)
+ddf = ddf.sample(min(len(ddf),50000), random_state=42)
 
 print("Enrollment shape:", edf.shape)
 print("Biometric shape:", bdf.shape)

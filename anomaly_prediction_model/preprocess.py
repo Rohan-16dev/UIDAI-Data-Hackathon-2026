@@ -22,26 +22,18 @@ def preprocess_clean(df):
     num_cols = df.select_dtypes(include=np.number).columns
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
 
-    cat_cols = df.select_dtypes(include="object").columns
-    for col in cat_cols:
-        df[col] = df[col].fillna(df[col].mode()[0])
+    # Remove constant columns
+    df = df.loc[:, df.nunique()>1]
 
+    
+    df = df.drop(columns=["state","district","pincode"], errors="ignore")
+    
     # Remove Invalid Rows
     #Remove negative values 
 
+    num_cols = [col for col in num_cols if col in df.columns]
     df[num_cols] = df[num_cols].clip(lower=0)
-
-    # Drop rows where key columns missing 
-    key_cols = ["state","district","pincode"]
-    for col in key_cols :
-           if col in df.columns : 
-                 df = df[df[col].notna()]
-
-    # Encoding
-    for col in cat_cols:
-        le = LabelEncoder()
-        df[col] = le.fit_transform(df[col])
-
+   
     # Scaling
     scaler = StandardScaler()
     df[num_cols] = scaler.fit_transform(df[num_cols])

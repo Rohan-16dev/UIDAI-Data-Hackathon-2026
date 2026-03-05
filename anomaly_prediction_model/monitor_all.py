@@ -80,15 +80,17 @@ def process(file, dataset):
 
     out = pd.DataFrame({
     "dataset": dataset,
-    "state": raw_df["state"],
-    "district": raw_df["district"],
-    "pincode": raw_df["pincode"],
+    "state": raw_df["state"].values,
+    "district": raw_df["district"].values,
+    "pincode": raw_df["pincode"].values,
     "predicted": pred,
     "anomaly": anomaly,
     "actual": y,
     "difference": (y - pred).abs(),
-})
+    })
 
+    out["pincode"]= out["pincode"].fillna("Unknown").astype(str).str.replace(".0","",regex= False)
+    
     file = CONFIG[dataset]["result"]
 
     if os.path.exists(file) and os.path.getsize(file) > 0:
@@ -99,7 +101,7 @@ def process(file, dataset):
            combined = out
     else:
          combined = out
-
+    
     combined.to_csv(file, index=False)
     print(f"{dataset.upper()} processed:", file)
 

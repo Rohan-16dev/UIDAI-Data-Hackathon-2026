@@ -26,7 +26,7 @@ def load_all():
     for name,path in FILES.items():
         if os.path.exists(path):
            try:
-             df=pd.read_csv(path)
+             df=pd.read_csv(path,dtype={"pincode": str})
              if df.empty:
                  continue
              
@@ -52,46 +52,7 @@ def load_all():
 data = load_all()
 
 if data is not None:
-        state_map = {
-             1: "Bihar",
-             2: "Maharashtra",
-             3: "West Bengal",
-             4: "UP",
-             5: "Karnataka",
-             6: "Tamil Nadu",
-             7: "Delhi",
-             8: "Gujarat",
-             9: "Rajasthan"
-             }
-
-        district_map = {
-             1: "Patna",
-             2: "Mumbai",
-             3: "Kolkata",
-             4: "Lucknow",
-             5: "Bangalore",
-             6: "Chennai",
-             7: "Delhi",
-             8: "Ahmedabad",
-             9: "Jaipur"
-             }
-
-        pincode_map = {
-             1: "800001",
-             2: "400001",
-             3: "700001",
-             4: "226001",
-             5: "560001",
-             6: "600001",
-             7: "110001",
-             8: "380001",
-             9: "302001"
-             }       
-
-        data["state_name"] = data["state"].round().clip(1,10).astype(int).map(state_map)
-        data["district_name"] = data["district"].round().clip(1,10).astype(int).map(district_map)
-        data["pincode_name"] = data["pincode"].round().clip(1,10).astype(int).map(pincode_map) 
-
+        data["pincode"]= (data["pincode"].fillna("").astype(str).str.replace(".0","", regex=False))
         data["deviation_percent"] = (
         (data["actual"] - data["predicted"]) / (data["predicted"] + 1)
         ) * 100
@@ -133,7 +94,7 @@ if data is not None:
                      top_dataset = "Unknown"
                 
                 # most affected state
-                state_risk = data[data["anomaly"] == 1]["state_name"].value_counts()
+                state_risk = data[data["anomaly"] == 1]["state"].value_counts()
 
                 if len(state_risk) > 0:
                      top_state = state_risk.index[0]
@@ -197,8 +158,8 @@ if data is not None:
             def explain_anomaly(row):
 
                  dataset = row["dataset"]
-                 state = row["state_name"]
-                 district = row["district_name"]
+                 state = row["state"]
+                 district = row["district"]
                  deviation = row["deviation_percent"]
 
                  if deviation > 0:
@@ -220,9 +181,9 @@ if data is not None:
 
                        Dataset: **{row['dataset']}**
 
-                       Location: **{row['district_name']}, {row['state_name']}**
+                       Location: **{row['district']}, {row['state']}**
 
-                       Pincode: **{row['pincode_name']}**
+                       Pincode: **{row['pincode']}**
 
                        Actual: **{row['actual']:.2f}**
 
@@ -258,9 +219,9 @@ if data is not None:
                 alert_table = critical_alerts[
                 [
                  "dataset",
-                 "state_name",
-                 "district_name",
-                 "pincode_name",
+                 "state",
+                 "district",
+                 "pincode",
                  "actual",
                  "predicted",
                  "difference",
@@ -295,7 +256,7 @@ if data is not None:
             else:
      
                 top_locations = (
-                anomaly_data.groupby(["state_name","district_name"])
+                anomaly_data.groupby(["state","district"])
                 .size()
                 .sort_values(ascending=False)
                 .head(5)
@@ -363,23 +324,33 @@ if data is not None:
             st.line_chart(data["difference"])
 
             state_coords = {
-                "Bihar": [25.5941, 85.1376],
-                "Maharashtra": [19.7515, 75.7139],
-                "West Bengal": [22.9868, 87.8550],
-                "UP": [26.8467, 80.9462],
-                "Karnataka": [15.3173, 75.7139],
-                "Tamil Nadu": [11.1271, 78.6569],
-                "Delhi": [28.7041, 77.1025],
-                "Gujarat": [22.2587, 71.1924],
-                "Rajasthan": [27.0238, 74.2179]
-                }
 
+                "Bihar": [25.5941, 85.1376],
+
+                "West Bengal": [22.9868, 87.8550],
+
+                "Maharashtra": [19.7515, 75.7139],
+
+                "Tamil Nadu": [11.1271, 78.6569],
+
+                "Rajasthan": [27.0238, 74.2179],
+
+                "Uttar Pradesh": [26.8467, 80.9462],
+
+                "Gujarat": [22.2587, 71.1924],
+
+                "Karnataka": [15.3173, 75.7139],
+
+                "Madhya Pradesh": [23.4733, 77.9470],
+
+                "Delhi": [28.7041, 77.1025]
+               }
 
 
             map_data = data[data["anomaly"] == 1].copy()
 
-            map_data["lat"] = map_data["state_name"].map(lambda x: state_coords.get(x, [None, None])[0])
-            map_data["lon"] = map_data["state_name"].map(lambda x: state_coords.get(x, [None, None])[1])
+            map_data["lat"] = map_data["state"].map(lambda x: state_coords.get(x, [None, None])[0])
+            map_data["lon"] = map_data["state"].map(lambda x: state_coords.get(x, [None, None])[1])
 
             map_data = map_data.dropna(subset=["lat", "lon"])
 
@@ -408,7 +379,7 @@ if data is not None:
             deck = pdk.Deck(
                 layers=[layer],
                 initial_view_state=view_state,
-                tooltip={"text": "{dataset} anomaly in {state_name}"}
+                tooltip={"text": "{dataset} anomaly in {state}"}
                )
 
             st.pydeck_chart(deck)   
@@ -417,9 +388,10 @@ if data is not None:
             # =====================================================
             # RAW DATA TABLE
             # =====================================================
-            data= data.drop(['state','district','pincode'], axis=1)
+            
             st.subheader("Processed Data")
-            st.dataframe(data)
+            st.caption("Showing latest 200 processed records")
+            st.dataframe(data.tail(200))
 else:
     st.warning("Waiting for incoming data...")
 

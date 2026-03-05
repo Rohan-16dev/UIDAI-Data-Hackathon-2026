@@ -417,7 +417,7 @@ if data is not None:
             # =====================================================
             # RAW DATA TABLE
             # =====================================================
-
+            data= data.drop(['state','district','pincode'], axis=1)
             st.subheader("Processed Data")
             st.dataframe(data)
 else:

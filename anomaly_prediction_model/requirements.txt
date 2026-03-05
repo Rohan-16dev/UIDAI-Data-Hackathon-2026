@@ -6,3 +6,4 @@ watchdog>=3.0
 streamlit>=1.30
 matplotlib>=3.7
 seaborn>=0.12
+pydeck>=0.8.1b0

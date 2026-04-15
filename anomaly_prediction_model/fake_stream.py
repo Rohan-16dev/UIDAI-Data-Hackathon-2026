@@ -102,8 +102,6 @@ while True:
         ]
      }
 
-    state = random.choice(list(state_district_map.keys()))
-    district = random.choice(state_district_map[state])
 
     pincode_map = {
     "Patna": "800001",
@@ -159,19 +157,40 @@ while True:
     
     }
 
-    pincode = pincode_map.get(district)
-
     folder = random.choice(folders).strip()
-
+     
     rows = np.random.randint(5,15)
+
+    if random.random() < 0.3:
+        # same location burst
+        state = random.choice(list(state_district_map.keys()))
+        district = random.choice(state_district_map[state])
+        pincode = pincode_map.get(district)
+        states = [state]*rows
+        districts = [district]*rows
+        pincodes = [str(pincode)]*rows
+    else:
+        states = []
+        districts =[]
+        pincodes = []
+
+        for _ in range(rows):
+             state = random.choice(list(state_district_map.keys()))
+             district = random.choice(state_district_map[state])
+             pincode = pincode_map.get(district)
+    
+             states.append(state)
+             districts.append(district)
+             pincodes.append(str(pincode))
+
     if folder == r"C:\Users\mishr\.vscode\Projects\UIDAI Hackathon\anomaly_prediction_model\incoming\enrollment":
       df = pd.DataFrame({
           "year": np.random.randint(2024,2027,rows),
           "month": np.random.randint(1,12,rows),
           "day": np.random.randint(1,31,rows),
-          "state": state,
-          "district": district,
-          "pincode": str(pincode),
+          "state": states,
+          "district": districts,
+          "pincode": pincodes,
           "age_0_5": np.random.randint(0,100,rows),
           "age_5_17": np.random.randint(0,100,rows),
           "age_18_greater": np.random.randint(0,100,rows)
@@ -192,9 +211,9 @@ while True:
           "year": np.random.randint(2024,2027,rows),
           "month": np.random.randint(1,12,rows),
           "day": np.random.randint(1,31,rows),
-          "state": state,
-          "district": district,
-          "pincode": str(pincode),
+          "state": states,
+          "district": districts,
+          "pincode": pincodes,
           "bio_age_5_17": np.random.randint(0,100,rows),
           "bio_age_17_": np.random.randint(0,100,rows)
      })
@@ -213,9 +232,9 @@ while True:
           "year": np.random.randint(2024,2027,rows),
           "month": np.random.randint(1,12,rows),
           "day": np.random.randint(1,31,rows),
-          "state": state,
-          "district": district,
-          "pincode": str(pincode),
+          "state": states,
+          "district": districts,
+          "pincode": pincodes,
           "demo_age_5_17": np.random.randint(0,100,rows),
           "demo_age_17_": np.random.randint(0,100,rows)
     })

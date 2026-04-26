@@ -111,3 +111,6 @@ AI-assisted tools were used responsibly to support coding efficiency, analysis s
 
 ## Acknowledgment
 This project was developed as part of the **UIDAI Data Hackathon 2026** using anonymized datasets provided solely for analytical and research purposes.
+
+⚠️ This project is part of a hackathon submission.
+Unauthorized reuse, reproduction, or submission as your own work is strictly prohibited.
